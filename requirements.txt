@@ -1,6 +1,10 @@
-fastmcp
-
-langchain_mcp_adapters
-langchain_openai
-langchain
+fastapi
+pydantic
+openai
 python-dotenv
+uvicorn
+langchain
+langchain-openai
+langchain-core
+langgraph
+gradio

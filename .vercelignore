@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.postman/
+postman/
+26.1.2
+frontend.py
+main.py
