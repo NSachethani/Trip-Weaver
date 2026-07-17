@@ -59,7 +59,7 @@ FRONTEND_HTML = """<!DOCTYPE html>
     <div class="chat-container">
         <div class="chat-header">
             <h1>Trip Weaver</h1>
-            <p>Your AI Travel Planner - Search flights & hotels</p>
+            <p>Trip Planner - Search flights & hotels</p>
         </div>
         <div class="chat-messages" id="chatMessages">
             <div class="welcome-message" id="welcomeMessage">
