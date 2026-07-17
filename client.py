@@ -8,11 +8,11 @@ from langchain.agents import create_agent
 load_dotenv(override=True)
 
 MCP_SERVERS = {
-    "hotel_service": {
+    "book_hotels": {
         "transport": "streamable-http",
         "url": "http://localhost:8003/mcp"
     },
-    "flight_service": {
+    "book_flight": {
         "transport": "streamable-http",
         "url": "http://localhost:8004/mcp"
     }
