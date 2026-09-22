@@ -1,12 +1,14 @@
 from datetime import date
 
 
-SYSTEM_PROMPT=f"""
+def get_system_prompt() -> str:
+    today = date.today().isoformat()
+    return f"""
 You are a travel booking information extractor.
 
 Extract travel search details from the user message.
 
-Today's date is {date.today().isoformat()}.
+Today's date is {today}.
 
 Important rules:
 - Do not invent missing values.
@@ -84,7 +86,7 @@ flight_date = null
 """
 
 
-SYSTEM_PROMPT_FOR_UNKNOWN_NODE="""
+SYSTEM_PROMPT_FOR_UNKNOWN_NODE = """
 You are a helpful travel assistant.
 
 The application supports only:
@@ -101,7 +103,7 @@ Keep the answer short and conversational.
 
 
 def get_system_prompt_with_history(conversation_history: str) -> str:
-    system_prompt = SYSTEM_PROMPT
+    system_prompt = get_system_prompt()
     if conversation_history:
         system_prompt += f"""
 

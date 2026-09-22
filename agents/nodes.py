@@ -5,7 +5,7 @@ from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
 from .tools import get_hotels, get_flights, search_hotel, search_flights, book_hotel,book_flight
 from .llm import llm
-from .prompts import get_system_prompt_for_unknown_node, get_system_prompt_with_history
+from .prompts import get_system_prompt, get_system_prompt_for_unknown_node, get_system_prompt_with_history
 from .entity import GraphState
 
 

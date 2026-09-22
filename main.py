@@ -1,12 +1,18 @@
-from fastapi import FastAPI
+from dotenv import load_dotenv
+load_dotenv()
+
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from collections import defaultdict
+import threading
+
 from entity import ChatRequest, ChatResponse
-from agents.tools import get_hotels, get_flights,search_hotel,search_flights,book_hotel,book_flight
+from agents.tools import get_hotels, get_flights
 from agents.graph import graph
 
-
-
-conversation_history_messages = []
+# Thread-safe per-session history
+conversation_history = defaultdict(list)
+_history_lock = threading.Lock()
 
 app = FastAPI()
 
@@ -34,18 +40,20 @@ async def list_flights():
     return get_flights.invoke({})
 
 
-@app.post("/chat")
-async def chat(request: ChatRequest) -> ChatResponse:
-
-    recent_pairs = conversation_history_messages[-3:]
-    flattened_messages = []
-    for user_msg, assistant_msg in recent_pairs:
-        flattened_messages.append(user_msg)
-        flattened_messages.append(assistant_msg)
-    flattened_messages.append(request.message)
+@app.post("/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
+    session_id = http_request.headers.get("X-Session-ID", "default")
+    
+    with _history_lock:
+        history = conversation_history[session_id]
+        recent_pairs = history[-3:]
+        flattened = []
+        for u, a in recent_pairs:
+            flattened.extend([u, a])
+        flattened.append(request.message)
 
     initial_state = {
-        "messages": flattened_messages,
+        "messages": flattened,
         "intent": "",
         "sub_action": "",
         "city": None,
@@ -66,11 +74,18 @@ async def chat(request: ChatRequest) -> ChatResponse:
         "response_text": "",
     }
 
-    result = graph.invoke(initial_state)
+    try:
+        result = graph.invoke(initial_state)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Graph execution failed: {e}")
 
     response_text = result.get("response_text", "Something went wrong. Please try again.")
 
-    conversation_history_messages.append((request.message, response_text))
+    with _history_lock:
+        conversation_history[session_id].append((request.message, response_text))
+        # Cap history at 20 exchanges per session
+        if len(conversation_history[session_id]) > 20:
+            conversation_history[session_id] = conversation_history[session_id][-20:]
 
     return ChatResponse(
         response=response_text,
@@ -81,5 +96,4 @@ async def chat(request: ChatRequest) -> ChatResponse:
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run(app, host="0.0.0.0", port=8000)
